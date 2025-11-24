@@ -43,6 +43,7 @@ read	bit kbdcr	; Key pressed?
 	beq append	; Yes, append the key to the buffer
 	cmp #$dd	; "]"?
 	beq append	; Yes, append the key to the buffer
+	jmp read	; Unrecognized character, skip it
 append	jsr echo	; Display the pressed key
 	sta (inslow),y	; Store the key in the address pointed to by the instruction pointer
 	clc
