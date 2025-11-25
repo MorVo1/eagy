@@ -8,7 +8,7 @@ inshigh equ $002f
 
 	* = $d014
 
-start		cld
+start	cld
 	ldy #0
 	lda #$00
 	sta datalow
