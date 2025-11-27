@@ -1,10 +1,10 @@
 kbd equ $d010
 kbdcr equ $d011
 echo equ $ffef
-datalow equ $002c
-datahigh equ $002d
-inslow equ $002e
-inshigh equ $002f
+datalow equ $2c
+datahigh equ $2d
+inslow equ $2e
+inshigh equ $2f
 
 	* = $d014
 
@@ -87,10 +87,15 @@ datadec	sec
 	sta datalow
 	lda datahigh
 	sbc #0
-	sta datahigh
-valinc	jmp *
-valdec	jmp *
-display jmp *
+	sta datahigh	; Decrement the data pointer
+valinc	lda (datalow),y
+	adc #1
+	sta (datalow),y	; Increment the cell value
+valdec	sec
+	lda (datalow),y
+	sbc #1
+	sta (datalow),y	; Decrement the cell value
+display	jmp *
 input	jmp *
 openbra	jmp *
 closbra	jmp *
