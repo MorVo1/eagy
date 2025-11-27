@@ -54,4 +54,43 @@ append	jsr echo	; Display the pressed key
 	adc #0
 	sta inshigh	; Increment the instruction pointer
 	jmp read	; Read the next character
-exec	jmp *
+exec	lda #$80
+	sta inslow
+	lda #$02
+	sta inshigh	; Set the instruction pointer back to $0280
+	lda (inslow),y
+	clc		; Clear carry for incrementing
+	cmp #$be	; ">"?
+	beq datainc	; Yes, increment the data pointer
+	cmp #$bc	; "<"?
+	beq datadec	; Yes, decrement the data pointer
+	cmp #$ab	; "+"?
+	beq valinc	; Yes, increment the cell value
+	cmp #$ad	; "-"?
+	beq valdec	; Yes, decrement the cell value
+	cmp #$ae	; "."?
+	beq display	; Yes, diplay the cell value
+	cmp #$ac	; ","?
+	beq input	; Yes, wait for a keypress
+	cmp #$db	; "["?
+	beq openbra	; Yes, enter a loop
+	jmp closbra	; Only "]" left, jump to the opening bracket
+datainc lda datalow
+	adc #1
+	sta datalow
+	lda datahigh
+	adc #0
+	sta datahigh	; Increment the data pointer
+datadec	sec
+	lda datalow
+	sbc #1
+	sta datalow
+	lda datahigh
+	sbc #0
+	sta datahigh
+valinc	jmp *
+valdec	jmp *
+display jmp *
+input	jmp *
+openbra	jmp *
+closbra	jmp *
