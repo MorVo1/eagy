@@ -1,6 +1,7 @@
 kbd equ $d010
 kbdcr equ $d011
 echo equ $ffef
+wozmon equ $ff00
 datalow equ $2c
 datahigh equ $2d
 inslow equ $2e
@@ -54,12 +55,13 @@ append	jsr echo	; Display the pressed key
 	adc #0
 	sta inshigh	; Increment the instruction pointer
 	jmp read	; Read the next character
-exec	lda #$80
+exec	lda #0
+	sta (inslow),y	; End the string
+	lda #$80
 	sta inslow
 	lda #$02
 	sta inshigh	; Set the instruction pointer back to $0280
-	lda (inslow),y
-	clc		; Clear carry for incrementing
+nextins	lda (inslow),y	; Load the current instruction
 	cmp #$be	; ">"?
 	beq datainc	; Yes, increment the data pointer
 	cmp #$bc	; "<"?
@@ -74,13 +76,25 @@ exec	lda #$80
 	beq input	; Yes, wait for a keypress
 	cmp #$db	; "["?
 	beq openbra	; Yes, enter a loop
-	jmp closbra	; Only "]" left, jump to the opening bracket
+	cmp #$dd	; "]"?
+	beq closbra	; Yes, jump to the opening bracket
+	jmp wozmon	; Reached the end, jump back to wozmon
+advance	lda inslow
+	clc
+	adc #1
+	sta inslow
+	lda inshigh
+	adc #0
+	sta inshigh	; Increment the instruction pointer
+	jmp nextins	; Jump to the next instruction
 datainc lda datalow
+	clc
 	adc #1
 	sta datalow
 	lda datahigh
 	adc #0
 	sta datahigh	; Increment the data pointer
+	jmp advance
 datadec	sec
 	lda datalow
 	sbc #1
@@ -88,13 +102,17 @@ datadec	sec
 	lda datahigh
 	sbc #0
 	sta datahigh	; Decrement the data pointer
+	jmp advance
 valinc	lda (datalow),y
+	clc
 	adc #1
 	sta (datalow),y	; Increment the cell value
+	jmp advance
 valdec	sec
 	lda (datalow),y
 	sbc #1
 	sta (datalow),y	; Decrement the cell value
+	jmp advance
 display	jmp *
 input	jmp *
 openbra	jmp *
