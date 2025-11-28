@@ -113,7 +113,9 @@ valdec	sec
 	sbc #1
 	sta (datalow),y	; Decrement the cell value
 	jmp advance
-display	jmp *
+display	lda (datalow),y
+	jsr echo
+	jmp advance
 input	jmp *
 openbra	jmp *
 closbra	jmp *
