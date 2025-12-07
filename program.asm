@@ -116,6 +116,10 @@ valdec	sec
 display	lda (datalow),y
 	jsr echo
 	jmp advance
-input	jmp *
+input	bit kbdcr	; Key pressed?
+	bpl input	; No, keep waiting
+	lda kbd		; Yes, load it to the A register
+	sta (datalow),y	; Store it in the data cell
+	jmp advance
 openbra	jmp *
 closbra	jmp *
