@@ -6,6 +6,8 @@ datalow equ $2c
 datahigh equ $2d
 inslow equ $2e
 inshigh equ $2f
+dmaxlow equ $30
+dmaxhigh equ $31
 
 	* = $d014
 
@@ -14,8 +16,12 @@ start	cld
 	ldx #0
 	lda #$00
 	sta datalow
+	sta dmaxlow
 	lda #$10
-	sta datahigh	; Initialize the data pointer to $1000
+	sta datahigh
+	sta dmaxhigh	; Initialize the data pointer and its max value to $1000
+	lda #0
+	sta (datalow),y	; Initialize the first data cell to 0
 	lda #$80
 	sta inslow
 	lda #$02
@@ -78,12 +84,13 @@ nextins	lda (inslow),y	; Load the current instruction
 	cmp #$ac	; ","?
 	beq input	; Yes, wait for a keypress
 	cmp #$db	; "["?
-	beq openbra	; Yes, enter a loop
+	beq toopen	; Yes, enter a loop
 	cmp #$dd	; "]"?
 	beq toclos	; Yes, jump to the opening bracket
 	lda #$8d	; CR
 	jsr echo	; Output it
 	jmp wozmon	; Reached the end, jump back to wozmon
+toopen	jmp openbra
 advance	lda inslow
 	clc
 	adc #1
@@ -99,6 +106,19 @@ datainc lda datalow
 	lda datahigh
 	adc #0
 	sta datahigh	; Increment the data pointer
+	sec
+	lda dmaxlow
+	sbc datalow
+	lda dmaxhigh
+	sbc datahigh	; Compare the current data pointer to the highest ever reached
+	bcc zero	; The current data pointer is higher, initialize the cell
+	jmp advance
+zero	lda #0
+	sta (datalow),y
+	lda datalow
+	sta dmaxlow
+	lda datahigh
+	sta dmaxhigh
 	jmp advance
 datadec	sec
 	lda datalow
