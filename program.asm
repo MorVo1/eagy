@@ -148,7 +148,8 @@ input	bit kbdcr	; Key pressed?
 	jmp advance
 toclos	jmp closbra
 toadv	jmp advance
-openbra	lda (datalow),y
+openbra	ldx #0		; Reset the bracket balance
+	lda (datalow),y
 	bne advance	; Byte at the data pointer is not 0, jump to the next instruction
 oloop	lda (inslow),y
 	cmp #$db	; "["?
@@ -169,7 +170,8 @@ obalm	dex
 	beq osave
 	jmp oret
 osave	jmp advance
-closbra	lda (datalow),y
+closbra	ldx #0		; Reset the bracket balance
+	lda (datalow),y
 	beq toadv	; Byte at the data pointer is 0, jump to the next instruction
 cloop	lda (inslow),y
 	cmp #$dd	; "]"?
@@ -188,5 +190,5 @@ cbalp	inx
 	jmp cret
 cbalm	dex
 	beq csave
-	jmp oret
+	jmp cret
 csave	jmp advance
