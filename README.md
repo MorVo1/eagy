@@ -11,4 +11,5 @@ Then, type in `D014R`, and press enter.
 After seeing the `#` prompt, you can start inputing the program.
 > [!TIP]
 > Use the <kbd>Backspace</kbd> key to correct your mistakes.
+
 Once you finish, press `;` to start the execution.
