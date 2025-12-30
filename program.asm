@@ -33,8 +33,10 @@ start	cld
 read	bit kbdcr	; Key pressed?
 	bpl read	; No, keep waiting
 	lda kbd		; Yes, load the key to A
+	cmp #$df	; Backspace?
+	beq bksp	; Yes, decrement the instruction pointer
 	cmp #$bb	; ";"?
-	beq exec	; Execute the program
+	beq exec	; Yes, execute the program
 	cmp #$be	; ">"?
 	beq append	; Yes, append the key to the buffer
 	cmp #$bc	; "<"?
@@ -62,6 +64,21 @@ append	jsr echo	; Display the pressed key
 	adc #0
 	sta inshigh	; Increment the instruction pointer
 	jmp read	; Read the next character
+bksp	jsr echo	; Display a "_"
+	lda inslow
+	sec
+	sbc #1
+	sta inslow
+	lda inshigh
+	sbc #0
+	sta inshigh	; Decrement the instruction pointer
+	lda inslow
+	cmp #$7f
+	bne read	; Not beyond the start of input, read the next character
+	lda inshigh
+	cmp #$2
+	bne read	; Not beyond the start of input, read the next character
+	jmp start	; Beyond the start of input, reset the program
 exec	lda #$8d	; CR
 	jsr echo	; Output it
 	lda #0
